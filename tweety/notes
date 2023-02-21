@@ -1,0 +1,263 @@
+_get_original_tweet
+{
+  "created_at": "Tue Feb 21 15:38:53 +0000 2023",
+  "conversation_id_str": "1628052632626511874",
+  "display_text_range": [
+    12,
+    12
+  ],
+  "entities": {
+    "media": [
+      {
+        "display_url": "pic.twitter.com/Rxv8gT4vFJ",
+        "expanded_url": "https://twitter.com/kantatenbot/status/1628056673641451520/photo/1",
+        "id_str": "1628056656595808256",
+        "indices": [
+          13,
+          36
+        ],
+        "media_url_https": "https://pbs.twimg.com/media/FpgE50KacAAF0zR.jpg",
+        "type": "photo",
+        "url": "https://t.co/Rxv8gT4vFJ",
+        "features": {
+          "large": {
+            "faces": []
+          },
+          "medium": {
+            "faces": []
+          },
+          "small": {
+            "faces": []
+          },
+          "orig": {
+            "faces": []
+          }
+        },
+        "sizes": {
+          "large": {
+            "h": 554,
+            "w": 554,
+            "resize": "fit"
+          },
+          "medium": {
+            "h": 554,
+            "w": 554,
+            "resize": "fit"
+          },
+          "small": {
+            "h": 554,
+            "w": 554,
+            "resize": "fit"
+          },
+          "thumb": {
+            "h": 150,
+            "w": 150,
+            "resize": "crop"
+          }
+        },
+        "original_info": {
+          "height": 554,
+          "width": 554,
+          "focus_rects": [
+            {
+              "x": 0,
+              "y": 244,
+              "w": 554,
+              "h": 310
+            },
+            {
+              "x": 0,
+              "y": 0,
+              "w": 554,
+              "h": 554
+            },
+            {
+              "x": 68,
+              "y": 0,
+              "w": 486,
+              "h": 554
+            },
+            {
+              "x": 277,
+              "y": 0,
+              "w": 277,
+              "h": 554
+            },
+            {
+              "x": 0,
+              "y": 0,
+              "w": 554,
+              "h": 554
+            }
+          ]
+        }
+      }
+    ],
+    "user_mentions": [
+      {
+        "id_str": "1366509523687604226",
+        "name": "Andy Ngâ",
+        "screen_name": "GribbleYell",
+        "indices": [
+          0,
+          12
+        ]
+      }
+    ],
+    "urls": [],
+    "hashtags": [],
+    "symbols": []
+  },
+  "extended_entities": {
+    "media": [
+      {
+        "display_url": "pic.twitter.com/Rxv8gT4vFJ",
+        "expanded_url": "https://twitter.com/kantatenbot/status/1628056673641451520/photo/1",
+        "id_str": "1628056656595808256",
+        "indices": [
+          13,
+          36
+        ],
+        "media_key": "3_1628056656595808256",
+        "media_url_https": "https://pbs.twimg.com/media/FpgE50KacAAF0zR.jpg",
+        "type": "photo",
+        "url": "https://t.co/Rxv8gT4vFJ",
+        "ext_media_color": {
+          "palette": [
+            {
+              "percentage": 56.04,
+              "rgb": {
+                "blue": 58,
+                "green": 67,
+                "red": 81
+              }
+            },
+            {
+              "percentage": 31.2,
+              "rgb": {
+                "blue": 194,
+                "green": 207,
+                "red": 229
+              }
+            },
+            {
+              "percentage": 3.28,
+              "rgb": {
+                "blue": 65,
+                "green": 12,
+                "red": 29
+              }
+            },
+            {
+              "percentage": 2.4,
+              "rgb": {
+                "blue": 159,
+                "green": 101,
+                "red": 197
+              }
+            },
+            {
+              "percentage": 1.28,
+              "rgb": {
+                "blue": 50,
+                "green": 69,
+                "red": 112
+              }
+            }
+          ]
+        },
+        "ext_media_availability": {
+          "status": "Available"
+        },
+        "features": {
+          "large": {
+            "faces": []
+          },
+          "medium": {
+            "faces": []
+          },
+          "small": {
+            "faces": []
+          },
+          "orig": {
+            "faces": []
+          }
+        },
+        "sizes": {
+          "large": {
+            "h": 554,
+            "w": 554,
+            "resize": "fit"
+          },
+          "medium": {
+            "h": 554,
+            "w": 554,
+            "resize": "fit"
+          },
+          "small": {
+            "h": 554,
+            "w": 554,
+            "resize": "fit"
+          },
+          "thumb": {
+            "h": 150,
+            "w": 150,
+            "resize": "crop"
+          }
+        },
+        "original_info": {
+          "height": 554,
+          "width": 554,
+          "focus_rects": [
+            {
+              "x": 0,
+              "y": 244,
+              "w": 554,
+              "h": 310
+            },
+            {
+              "x": 0,
+              "y": 0,
+              "w": 554,
+              "h": 554
+            },
+            {
+              "x": 68,
+              "y": 0,
+              "w": 486,
+              "h": 554
+            },
+            {
+              "x": 277,
+              "y": 0,
+              "w": 277,
+              "h": 554
+            },
+            {
+              "x": 0,
+              "y": 0,
+              "w": 554,
+              "h": 554
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "favorite_count": 0,
+  "favorited": false,
+  "full_text": "@GribbleYell https://t.co/Rxv8gT4vFJ",
+  "in_reply_to_screen_name": "GribbleYell",
+  "in_reply_to_status_id_str": "1628052632626511874",
+  "in_reply_to_user_id_str": "1366509523687604226",
+  "is_quote_status": false,
+  "lang": "qme",
+  "possibly_sensitive": false,
+  "possibly_sensitive_editable": true,
+  "quote_count": 0,
+  "reply_count": 0,
+  "retweet_count": 0,
+  "retweeted": false,
+  "user_id_str": "839023533963554817",
+  "id_str": "1628056673641451520"
+}
