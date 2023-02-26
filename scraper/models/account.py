@@ -20,22 +20,27 @@ class Account(ScrapeBase):
     # display name, eg Elon Musk
     display_name: Mapped[str]
     # your @, eg @elonmusk
-    handle: Mapped[str] = mapped_column(index=True)
+    username: Mapped[str] = mapped_column(index=True)
     joined_at: Mapped[datetime.datetime]
     description: Mapped[str]
     location: Mapped[str]
     protected: Mapped[bool]
     verified: Mapped[bool]
 
-    tw_possibly_sensitive: Mapped[Optional[bool]]
-    tw_verified_type: Mapped[Optional[str]]
+    followers_count: Mapped[int]
+    following_count: Mapped[int]
+    statuses_count: Mapped[int]
+    favourites_count: Mapped[int]
 
-    tw_normal_followers_count: Mapped[int]
-    tw_statuses_count: Mapped[int]
-    tw_media_count: Mapped[int]
-    tw_listed_count: Mapped[int]
-    tw_fast_followers_count: Mapped[int]
-    tw_favourites_count: Mapped[int]
-    tw_followers_count: Mapped[int]
+    # tw_possibly_sensitive: Mapped[Optional[bool]]
+    # tw_verified_type: Mapped[Optional[str]]
+
+    # tw_normal_followers_count: Mapped[int]
+    # tw_statuses_count: Mapped[int]
+    # tw_media_count: Mapped[int]
+    # tw_listed_count: Mapped[int]
+    # tw_fast_followers_count: Mapped[int]
+    # tw_favourites_count: Mapped[int]
+    # tw_followers_count: Mapped[int]
     # what the API calls follows (not the same as mutuals! lol!)
-    tw_friends_count: Mapped[int]
+    # tw_friends_count: Mapped[int]

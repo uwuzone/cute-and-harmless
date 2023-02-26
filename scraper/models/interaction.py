@@ -8,6 +8,27 @@ from sqlalchemy.orm import Mapped
 from models.base import ScrapeBase
 
 
+class Favorite(ScrapeBase):
+    __tablename__ = 'favorite'
+
+    internal_id: Mapped[int] = mapped_column(
+        primary_key=True, autoincrement=True)
+    liked_by_rest_id: Mapped[str] = mapped_column(
+        ForeignKey('account.rest_id'),)
+    tweet_rest_id: Mapped[str] = mapped_column(ForeignKey('tweet.rest_id'),)
+
+
+class Follow(ScrapeBase):
+    __tablename__ = 'follow'
+
+    internal_id: Mapped[int] = mapped_column(
+        primary_key=True, autoincrement=True)
+    follows_rest_id: Mapped[str] = mapped_column(
+        ForeignKey('account.rest_id'),)
+    followed_by_rest_id: Mapped[str] = mapped_column(
+        ForeignKey('account.rest_id'),)
+
+
 class Tweet(ScrapeBase):
     __tablename__ = 'tweet'
 
@@ -31,7 +52,7 @@ class Tweet(ScrapeBase):
     reply_to_tweet_rest_id: Mapped[Optional[str]] = mapped_column(
         ForeignKey('tweet.rest_id'))
 
-    tw_is_possibly_sensitive: Mapped[bool]
+    # tw_is_possibly_sensitive: Mapped[bool]
     # tw_vibe: Mapped[str]
     # tw_is_quoted: Mapped[str]
     # tw_quoted_tweet: Mapped[str]

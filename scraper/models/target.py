@@ -1,4 +1,3 @@
-# bro what
 from __future__ import annotations
 import datetime
 
@@ -32,7 +31,7 @@ class Target(Base):
     __tablename__ = 'target'
 
     id: Mapped[str] = mapped_column(primary_key=True)
-    handle: Mapped[str] = mapped_column(primary_key=True)
+    username: Mapped[str] = mapped_column(primary_key=True)
     status: Mapped[JobStatus] = mapped_column(default=JobStatus.NEW)
 
     # 0 if this is the root
@@ -48,14 +47,12 @@ class Target(Base):
     started_at: Mapped[Optional[datetime.datetime]]
     updated_at: Mapped[Optional[datetime.datetime]]
 
-    tweety_last_cursor: Mapped[Optional[str]]
-
-    def create_child(self, handle: str) -> Target:
+    def create_child(self, username: str) -> Target:
         '''Make a child target with settings copied and depth incremented.
         Caller must save.'''
         return Target(
             id=self.id,
-            handle=handle,
+            username=username,
             own_depth=self.own_depth+1,
             max_branch=self.max_branch,
             max_depth=self.max_depth,
