@@ -6,6 +6,12 @@ name = "pypi"
 [packages]
 tweety-ns = "*"
 sqlalchemy = {extras = ["asyncio"], version = "*"}
+certifi = "*"
+selenium = "==4.2.0"
+chromedriver-autoinstaller = "*"
+urllib3 = "*"
+loguru = "*"
+psycopg2 = "*"
 
 [dev-packages]
 autopep8 = "*"

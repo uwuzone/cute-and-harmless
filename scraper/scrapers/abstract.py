@@ -18,19 +18,14 @@ class Scraper(ABC):
     def get_user_info(self) -> Account:
         pass
 
-    # TODO: make a generator version..
     @abstractmethod
     def get_tweets(self, include_replies: bool = True, max_tweets: int = 200) -> Generator[Tweet, None, None]:
         yield from []
 
     @abstractmethod
-    def get_following(self) -> Generator[Follow, None, None]:
+    def get_following(self, limit: int = 200) -> Generator[Follow, None, None]:
         yield from []
 
     @abstractmethod
     def get_followers(self) -> Generator[Follow, None, None]:
         yield from []
-
-    # @abstractmethod
-    # def get_thread(self, tweet_id: str):
-    #     pass

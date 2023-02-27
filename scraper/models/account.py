@@ -1,6 +1,6 @@
 import datetime
 
-from typing import Optional, List
+from typing import List
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column, relationship
 
@@ -11,15 +11,13 @@ from models.base import ScrapeBase
 class Account(ScrapeBase):
     __tablename__ = 'account'
 
-    # numerical ID
+    # the numerical-looking ID used by API 1.1
     rest_id: Mapped[str] = mapped_column(primary_key=True)
     tweets: Mapped[List['Tweet']] = relationship(
         foreign_keys='Tweet.author_rest_id')
 
     profile_url: Mapped[str]
-    # display name, eg Elon Musk
     display_name: Mapped[str]
-    # your @, eg @elonmusk
     username: Mapped[str] = mapped_column(index=True)
     joined_at: Mapped[datetime.datetime]
     description: Mapped[str]

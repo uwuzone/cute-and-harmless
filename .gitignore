@@ -1,4 +1,6 @@
 *.db
 *.db-*
 
+.envrc
+
 __pycache__

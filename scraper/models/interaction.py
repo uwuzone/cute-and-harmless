@@ -23,10 +23,15 @@ class Follow(ScrapeBase):
 
     internal_id: Mapped[int] = mapped_column(
         primary_key=True, autoincrement=True)
-    follows_rest_id: Mapped[str] = mapped_column(
-        ForeignKey('account.rest_id'),)
-    followed_by_rest_id: Mapped[str] = mapped_column(
-        ForeignKey('account.rest_id'),)
+    # TODO: it's possible to get this data as we scrape followers (just need to
+    # do concurrently or something) it is possible to use the rest id columns
+    follows_username: Mapped[str]
+    followed_by_username: Mapped[str]
+
+    # follows_rest_id: Mapped[str] = mapped_column(
+    #     ForeignKey('account.rest_id'),)
+    # followed_by_rest_id: Mapped[str] = mapped_column(
+    #     ForeignKey('account.rest_id'),)
 
 
 class Tweet(ScrapeBase):

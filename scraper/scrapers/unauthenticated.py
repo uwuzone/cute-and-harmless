@@ -28,6 +28,12 @@ def wrap_exceptions(func):
 
 
 class UnauthenticatedScraper(Scraper):
+    '''
+    An unauthenticated scraper which can get public tweets + replies but not
+    likes/follows/following. This should be used for the bulk of tweet scraping
+    tasks, as it doesn't risk your account getting banned.
+    '''
+
     _bot: Optional[Bot]
 
     def __init__(self, username: str, wait_time: int = 2):
@@ -59,14 +65,13 @@ class UnauthenticatedScraper(Scraper):
             favourites_count=user_info.fast_followers_count,
         )
 
+    # TODO: a generator fork of tweety is preferable because we won't lose
+    # progress if fetching fails partway through. however, since this is
+    # unauthenticated, it's low risk
     @wrap_exceptions
     def get_tweets(self, include_replies: bool = True, max_tweets: int = 200) -> Generator[Tweet, None, None]:
         pages = max(ceil(max_tweets / 20), 1)
         # XXX: this is untyped in the library :skull:
-        # XXX: this is eager in the library, which means it can error without
-        # returning anything if you try to fetch a lot or have *any* issue,
-        # like network timeout etc (not configurable btw)
-        # TODO: patch or fork this library
         all_tweets = self._get_bot(self._username).get_tweets(
             replies=include_replies,
             pages=pages,
