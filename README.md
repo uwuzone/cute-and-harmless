@@ -1,5 +1,9 @@
 # silly little twitter cralwer
 
+- **target** - a user to scrape
+- **job** - the task of scraping a graph of users connected to some root target
+  - all targets acquired by crawling from a given root target will have the same job ID by default
+
 # Getting started
 
 Set this environment variables (try https://direnv.net/)
@@ -20,10 +24,11 @@ export CUTE_SCRAPER_USER_DATA_DIR=/tmp/userdata-example
 export CUTE_SCRAPER_PROFILE_DIR=/tmp/profile-example
 
 # target/job info. You must provide at least one of these. If both are provided,
-# "resume_job_id" takes precedence
-# can be a username
-export CUTE_SCRAPER_ROOT_TARGET=bronzeagemantis
-# you'll see the job id when scraping starts (you can also query db)
+# "resume_job_id" takes precedence.
+#
+# root target is a username
+export CUTE_SCRAPER_ROOT_TARGET=
+# or resume a job you'll see the job id when scraping starts (you can also query db)
 export CUTE_SCRAPER_RESUME_JOB_ID=
 
 # default connection for dev
