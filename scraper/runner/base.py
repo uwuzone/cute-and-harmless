@@ -46,7 +46,6 @@ def wrap_scraper_exceptions_and_logging(func):
                 logger.error(
                     f'(completely unanticipated error) {target.username}, {e}')
                 error()
-                raise e
             else:
                 finish()
 

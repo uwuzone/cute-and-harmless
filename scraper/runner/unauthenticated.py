@@ -1,7 +1,7 @@
 import asyncio
 
 from loguru import logger
-from sqlalchemy import Engine, select
+from sqlalchemy import select, update
 
 from sqlalchemy.orm import Session
 
@@ -12,57 +12,55 @@ from runner.base import wrap_scraper_exceptions_and_logging
 from scrapers.unauthenticated import UnauthenticatedScraper
 
 
-async def take_job(engine: Engine, polling_interval: int = 15):
-    with Session(engine) as session:
-        while True:
-            job = session.scalars(
-                select(TweetJob).where(
-                    TweetJob.status == JobStatus.NEW,
-                ).order_by(
-                    TweetJob.created_at.desc()
-                ).limit(1)
-            ).first()
+async def take_job(session: Session, polling_interval: int = 15):
+    while True:
+        subq = (
+            select(TweetJob.job_id)
+            .filter(TweetJob.status == JobStatus.NEW)
+            .order_by(TweetJob.created_at.desc())
+            .limit(1)
+            .subquery()
+        )
+        jobs = session.scalars(
+            update(TweetJob)
+            .values(status=JobStatus.RUNNING)
+            .where(TweetJob.job_id.in_(select(subq)))
+            .returning(TweetJob)
+        ).all()
 
-            if job is not None:
-                return job
+        if len(jobs) > 1:
+            raise Exception('my friend your sql are fucked 🙏😑')
+        if len(jobs) == 1:
+            session.commit()
+            return jobs[0]
 
-            await asyncio.sleep(polling_interval)
+        await asyncio.sleep(polling_interval)
 
 
 @wrap_scraper_exceptions_and_logging
 def scrape(session: Session, scraper: UnauthenticatedScraper, job: TweetJob):
-    '''
-    Scrape the target.
-
-    High level:
-    - Fetch account profile
-    - Fetch followers and add them as targets
-    - Fetch tweets
-      - if any tweet is reply, add the people it replies to as targets
-    '''
-    logger.debug(f'getting tweets and replies')
+    logger.info(f'getting tweets and replies')
     n_tweets = 0
     for tweet in scraper.get_tweets(max_tweets=job.max_tweets):
-        logger.debug(
-            f'tweet id {tweet.rest_id} ({tweet.content[:20]}...)'
-        )
+        logger.debug(f'tweet id {tweet.rest_id} ({tweet.content[:20]}...)')
         session.merge(tweet)
         session.commit()
         n_tweets += 1
     session.commit()
-    logger.debug(f'saved {n_tweets} tweets')
+    logger.info(f'saved {n_tweets} tweets')
 
 
-async def run_unauthenticated(concurrency: int = 8):
+async def run(concurrency: int = 8):
     engine = get_db_engine()
-    sem = asyncio.Semaphore(concurrency)
 
-    while True:
-        logger.info('Waiting for tweet scraping jobs')
-        job = await take_job(engine)
-        scraper = UnauthenticatedScraper(job.username)
-        async with sem:
-            logger.debug(
-                f'Starting new job, concurrency pool {sem._value}/{concurrency}')
+    async def worker(i: int):
+        while True:
             with Session(engine) as session:
+                logger.debug(f'Waiting for job {i}/{concurrency}')
+                job: TweetJob = await take_job(session)
+                scraper = UnauthenticatedScraper(job.username)
                 await asyncio.to_thread(scrape, session, scraper, job)
+
+    await asyncio.gather(*[
+        worker(i + 1) for i in range(concurrency)
+    ])

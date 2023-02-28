@@ -1,27 +1,18 @@
 from __future__ import annotations
+
 import asyncio
+from signal import SIGINT, SIGTERM
 
-
-from runner.unauthenticated import run_unauthenticated
-
-
-# async def take_worker(engine: Engine, cooldown_seconds: int = 60*60*12) -> Optional[Worker]:
-#     '''Get next available worker that's off cooldown. Immediately marks it as
-#     unavailable.'''
-#     pass
-
-
-# async def run_authenticated(concurrency: int = 4):
-#     engine = get_db_engine()
-#     asyncio.Semaphore(concurrency)
-
-#     while True:
-#         worker = await take_worker(engine)
+from runner import unauthenticated
 
 
 async def main():
+    loop = asyncio.get_running_loop()
+    for signal_enum in [SIGINT, SIGTERM]:
+        loop.add_signal_handler(signal_enum, loop.stop)
+
     await asyncio.gather(
-        run_unauthenticated(concurrency=2)
+        unauthenticated.run(concurrency=2)
     )
 
 
