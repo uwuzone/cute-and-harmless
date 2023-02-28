@@ -15,6 +15,10 @@ class Scraper(ABC):
         self._username = username
 
     @abstractmethod
+    def id(self) -> str:
+        pass
+
+    @abstractmethod
     def get_user_info(self) -> Account:
         pass
 

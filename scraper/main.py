@@ -1,54 +1,20 @@
 # TODO: stop when we see duplicate data?
-# TODO: fetch likes (may need authentication for this)
 # TODO: should new user in the replies get added as target?
-# TODO(optional): better way to handle job state
-from typing import List, Optional, Generator
+from typing import Optional, Generator
 
 from selenium import webdriver
-from sqlalchemy import Engine, create_engine, select
-from sqlalchemy.engine.url import URL
+from sqlalchemy import select
 from sqlalchemy.orm import Session
-from sqlalchemy.dialects.postgresql import insert as sqlite_insert
 
-from models import init_db
+from models import get_db_engine
 from models.target import Target, JobStatus, new_job_id
 
 from common.logging import logger
+from scraper.models.target import insert_targets_on_conflict_ignore
 from scrapers import exceptions
 from scrapers.abstract import Scraper
 from scrapers.authenticated import AuthenticatedScraper
 from vendor.scweet.credentials import Credentials
-
-
-def get_db_engine() -> Engine:
-    from os import environ as env
-    url = URL.create(
-        drivername='postgresql',
-        username=env.get('CUTE_PG_USER'),
-        password=env.get('CUTE_PG_PASSWORD'),
-        host=env.get('CUTE_PG_HOST'),
-        database=env.get('CUTE_PG_DATABASE'),
-        port=env.get('CUTE_PG_PORT')
-    )
-    return create_engine(url)
-
-
-class Statement:
-    @staticmethod
-    def add_targets_statement(targets: List[Target]):
-        '''
-        Insert targets, ignore duplicates
-        '''
-        return sqlite_insert(Target).values([
-            dict(
-                id=target.id,
-                username=target.username,
-                own_depth=target.own_depth,
-                max_depth=target.max_depth,
-                max_tweets=target.max_tweets
-            )
-            for target in targets
-        ]).on_conflict_do_nothing(index_elements=[Target.id, Target.username])
 
 
 def scrape(scraper: Scraper, session: Session, target: Target):
@@ -85,27 +51,35 @@ def scrape(scraper: Scraper, session: Session, target: Target):
 
         # save accounts followed by target as new targets
         logger.debug(f'{target.username}: getting following')
+        n_following = 0
         for follow in scraper.get_following():
             # TODO: it's actually possible to get user ID here which is more
             # stable than username (can use the unauthenticated scraper for it)
             session.merge(follow)
             logger.debug(
-                f'{target.username}: found following {follow.followed_by_username}'
+                f'{target.username}: is following {follow.follows_username}'
             )
             if target.own_depth < target.max_depth:
                 session.execute(
-                    Statement.add_targets_statement(
+                    insert_targets_on_conflict_ignore(
                         [target.create_child(follow.followed_by_username)]
                     )
                 )
+            session.commit()
+            n_following += 1
+        logger.debug(f'{target.username}: saved {n_following} following')
 
         # save tweets
         logger.debug(f'{target.username}: getting tweets + replies')
+        n_tweets = 0
         for tweet in scraper.get_tweets(max_tweets=target.max_tweets):
             logger.debug(
                 f'{target.username}: tweet id {tweet.rest_id} ({tweet.content[:20]}...)'
             )
             session.merge(tweet)
+            session.commit()
+            n_tweets += 1
+        logger.debug(f'{target.username}: saved {n_tweets} tweets')
 
     except exceptions.UserNotFound as e:
         logger.warning(f'(user not found) skipping {e.username}')
@@ -116,18 +90,19 @@ def scrape(scraper: Scraper, session: Session, target: Target):
     except exceptions.UnknownException as e:
         logger.error(f'(tweety error) {e.username}, {e.info}')
         error()
-    except KeyboardInterrupt:
+    except KeyboardInterrupt as e:
         logger.error(f'(keyboard interrupt) {target.username}')
         error()
-        raise
+        raise e
     except Exception as e:
         logger.error(f'(unknown error) {target.username}, {e}')
         error()
+        raise e
     else:
         finish()
 
 
-def list_targets(job_id: str) -> Generator[Target, None, None]:
+def list_targets(session: Session, job_id: str) -> Generator[Target, None, None]:
     while True:
         target = session.scalars(
             select(Target).where(
@@ -142,6 +117,10 @@ def list_targets(job_id: str) -> Generator[Target, None, None]:
             return
 
         yield target
+
+
+async def main():
+    pass
 
 
 if __name__ == '__main__':
@@ -162,7 +141,6 @@ if __name__ == '__main__':
             'Missing target. Set CUTE_SCRAPER_ROOT_TARGET or CUTE_SCRAPER_RESUME_JOB_ID')
 
     engine = get_db_engine()
-    init_db(engine)
 
     with Session(engine) as session:
         if CUTE_SCRAPER_RESUME_JOB_ID:
@@ -174,7 +152,6 @@ if __name__ == '__main__':
                 # implies he is the root; this is default
                 own_depth=0,
                 # max number of additional targets to add on when scraping
-                max_branch=None,
                 max_depth=4,
                 # this is more of a suggestion. we fetch up to the closest number of
                 # pages that we expect to return this limit, so you may get slightly
@@ -189,11 +166,12 @@ if __name__ == '__main__':
 
         driver: Optional[webdriver.Remote] = None
 
-        for target in list_targets(root_job_id):
+        for target in list_targets(session, root_job_id):
             logger.info(
                 f'JOB: {target.id} | TARGET: {target.username} | DEPTH {target.own_depth}'
             )
             scraper = AuthenticatedScraper(
+                headless=True,
                 username=target.username,
                 credentials=Credentials(
                     CUTE_SCRAPER_USERNAME,

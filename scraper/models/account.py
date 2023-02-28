@@ -13,8 +13,8 @@ class Account(ScrapeBase):
 
     # the numerical-looking ID used by API 1.1
     rest_id: Mapped[str] = mapped_column(primary_key=True)
-    tweets: Mapped[List['Tweet']] = relationship(
-        foreign_keys='Tweet.author_rest_id')
+    # tweets: Mapped[List['Tweet']] = relationship(
+    #     foreign_keys='Tweet.author_rest_id')
 
     profile_url: Mapped[str]
     display_name: Mapped[str]

@@ -7,11 +7,12 @@ name = "pypi"
 tweety-ns = "*"
 sqlalchemy = {extras = ["asyncio"], version = "*"}
 certifi = "*"
-selenium = "==4.2.0"
+selenium = "*"
 chromedriver-autoinstaller = "*"
 urllib3 = "*"
 loguru = "*"
 psycopg2 = "*"
+yaspin = "*"
 
 [dev-packages]
 autopep8 = "*"

@@ -20,6 +20,7 @@ def wrap_exceptions(func):
         except tw_exceptions.UserNotFound:
             raise exceptions.UserNotFound(self._username)
         except tw_exceptions.UserProtected:
+            print('WTF')
             raise exceptions.UserProtected(self._username)
         except tw_exceptions.UnknownError as e:
             raise exceptions.UnknownException(self._username, e.message)
@@ -40,6 +41,11 @@ class UnauthenticatedScraper(Scraper):
         self._bot = None
         super().__init__(username, wait_time)
 
+    def id(self) -> str:
+        return f'anonymous-scraper:{self._username}'
+
+    # wtf why is this necessary LOL
+    @wrap_exceptions
     def _get_bot(self, username: str) -> Bot:
         if self._bot is None or self._bot.user.name != username:
             self._bot = Bot(username)

@@ -1,7 +1,7 @@
 import datetime
 
 from typing import Optional
-from sqlalchemy import ForeignKey
+# from sqlalchemy import ForeignKey
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import Mapped
 
@@ -13,9 +13,9 @@ class Favorite(ScrapeBase):
 
     internal_id: Mapped[int] = mapped_column(
         primary_key=True, autoincrement=True)
-    liked_by_rest_id: Mapped[str] = mapped_column(
-        ForeignKey('account.rest_id'),)
-    tweet_rest_id: Mapped[str] = mapped_column(ForeignKey('tweet.rest_id'),)
+    # = mapped_column(ForeignKey('account.rest_id'),)
+    liked_by_rest_id: Mapped[str]
+    tweet_rest_id: Mapped[str]  # = mapped_column(ForeignKey('tweet.rest_id'),)
 
 
 class Follow(ScrapeBase):
@@ -41,7 +41,8 @@ class Tweet(ScrapeBase):
     created_on: Mapped[datetime.datetime]
     content: Mapped[str]
 
-    author_rest_id: Mapped[str] = mapped_column(ForeignKey('account.rest_id'),)
+    # = mapped_column(ForeignKey('account.rest_id'),)
+    author_rest_id: Mapped[str]
 
     reply_count: Mapped[int]
     like_count: Mapped[int]
@@ -51,11 +52,11 @@ class Tweet(ScrapeBase):
     is_retweet: Mapped[bool]
 
     is_reply: Mapped[bool]
-    reply_to_account_rest_id: Mapped[Optional[str]] = mapped_column(
-        ForeignKey('account.rest_id'))
+    # = mapped_column(ForeignKey('account.rest_id'))
+    reply_to_account_rest_id: Mapped[Optional[str]]
 
-    reply_to_tweet_rest_id: Mapped[Optional[str]] = mapped_column(
-        ForeignKey('tweet.rest_id'))
+    # = mapped_column(ForeignKey('tweet.rest_id'))
+    reply_to_tweet_rest_id: Mapped[Optional[str]]
 
     # tw_is_possibly_sensitive: Mapped[bool]
     # tw_vibe: Mapped[str]

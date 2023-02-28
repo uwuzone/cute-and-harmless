@@ -54,6 +54,9 @@ class AuthenticatedScraper(Scraper):
         self._headless = headless or False
         super().__init__(username, wait_time)
 
+    def id(self) -> str:
+        return f'authenticated-scraper({self._credentials.username}):{self._username}'
+
     def _get_driver(self):
         if self._driver is None:
             logger.debug(

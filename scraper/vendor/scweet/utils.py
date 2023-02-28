@@ -18,10 +18,8 @@ from common.logging import logger
 from vendor.scweet.credentials import Credentials
 
 
-def init_driver(headless=True, proxy=None, option=None, profile_dir: Optional[str] = None, user_data_dir: Optional[str] = None):
-    """ initiate a chromedriver or firefoxdriver instance
-        --option : other option to add (str)
-    """
+def init_driver(headless=True, proxy=None, profile_dir: Optional[str] = None, user_data_dir: Optional[str] = None):
+    '''Initiate a chromedriver.'''
 
     options = ChromeOptions()
     driver_path = chromedriver_autoinstaller.install()
@@ -29,18 +27,14 @@ def init_driver(headless=True, proxy=None, option=None, profile_dir: Optional[st
     if headless is True:
         logger.debug("chrome: launching in headless mode.")
         options.add_argument('--disable-gpu')
-        options.headless = True
+        # https://www.selenium.dev/blog/2023/headless-is-going-away/
+        options.add_argument('--headless=new')
     else:
         options.headless = False
     options.add_argument('log-level=3')
     if proxy is not None:
         options.add_argument('--proxy-server=%s' % proxy)
         logger.debug(f'chrome: using proxy : {proxy}')
-    # if show_images == False:
-    #     prefs = {"profile.managed_default_content_settings.images": 2}
-    #     options.add_experimental_option("prefs", prefs)
-    if option is not None:
-        options.add_argument(option)
     if profile_dir is not None:
         options.add_argument(f'--profile-director={profile_dir}')
     if user_data_dir is not None:
