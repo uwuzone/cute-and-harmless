@@ -44,6 +44,7 @@ def submit_job(usernames: List[str], max_followers: int, max_depth: int, max_twe
                 insert_following_jobs_on_conflict_ignore([following_job]))
             session.execute(insert_tweet_jobs_on_conflict_ignore([tweet_job]))
             session.commit()
+            print(f'Submitted job {job_id}')
 
 
 def main():

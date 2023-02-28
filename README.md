@@ -9,28 +9,6 @@
 Set this environment variables (try https://direnv.net/)
 
 ```bash
-# login info for scraper account.
-# do not use your main account! you will get banned
-export CUTE_SCRAPER_USERNAME=
-export CUTE_SCRAPER_PASSWORD=
-
-# chrome profile info. if provided, your chrome session will get saved here so
-# you don't have to log in over and over (which is a really the quick way to get
-# flagged as sus)
-#
-# The directories don't have to exist---they'll get created the first time you
-# run the scraper
-export CUTE_SCRAPER_USER_DATA_DIR=/tmp/userdata-example
-export CUTE_SCRAPER_PROFILE_DIR=/tmp/profile-example
-
-# target/job info. You must provide at least one of these. If both are provided,
-# "resume_job_id" takes precedence.
-#
-# root target is a username
-export CUTE_SCRAPER_ROOT_TARGET=
-# or resume a job you'll see the job id when scraping starts (you can also query db)
-export CUTE_SCRAPER_RESUME_JOB_ID=
-
 # default connection for dev
 export CUTE_PG_USER=postgres
 export CUTE_PG_PASSWORD=dev
@@ -44,7 +22,8 @@ export CUTE_PG_PORT=5432
 ; docker-compose up -d
 ; cd scraper
 ; pipenv install
-; pipenv run python main.py
+; pipenv run python runner.py  # start the watcher/server/whatever
+; pipenv run python admin.py submit-jobs [usernames go here]
 ```
 
 # TODO
