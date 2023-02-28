@@ -7,17 +7,17 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from models import get_db_engine
-from models.target import Target, JobStatus, new_job_id
+from models.target import FollowingJob, JobStatus, new_job_id
 
 from common.logging import logger
-from scraper.models.target import insert_targets_on_conflict_ignore
+from scraper.models.job import insert_targets_on_conflict_ignore
 from scrapers import exceptions
 from scrapers.abstract import Scraper
 from scrapers.authenticated import AuthenticatedScraper
 from vendor.scweet.credentials import Credentials
 
 
-def scrape(scraper: Scraper, session: Session, target: Target):
+def scrape(scraper: Scraper, session: Session, target: FollowingJob):
     '''
     Scrape the target.
 
@@ -102,14 +102,14 @@ def scrape(scraper: Scraper, session: Session, target: Target):
         finish()
 
 
-def list_targets(session: Session, job_id: str) -> Generator[Target, None, None]:
+def list_targets(session: Session, job_id: str) -> Generator[FollowingJob, None, None]:
     while True:
         target = session.scalars(
-            select(Target).where(
-                Target.id == job_id,
-                Target.status == JobStatus.NEW,
+            select(FollowingJob).where(
+                FollowingJob.job_id == job_id,
+                FollowingJob.status == JobStatus.NEW,
             ).order_by(
-                Target.own_depth
+                FollowingJob.own_depth
             ).limit(1)
         ).first()
 
@@ -146,7 +146,7 @@ if __name__ == '__main__':
         if CUTE_SCRAPER_RESUME_JOB_ID:
             root_job_id = CUTE_SCRAPER_RESUME_JOB_ID
         else:
-            root = Target(
+            root = FollowingJob(
                 id=new_job_id(CUTE_SCRAPER_ROOT_TARGET),
                 username=CUTE_SCRAPER_ROOT_TARGET,
                 # implies he is the root; this is default
@@ -160,7 +160,7 @@ if __name__ == '__main__':
             )
             session.add(root)
             session.commit()
-            root_job_id = root.id
+            root_job_id = root.job_id
 
         logger.info(f'JOB: {root_job_id} starting...')
 
@@ -168,7 +168,7 @@ if __name__ == '__main__':
 
         for target in list_targets(session, root_job_id):
             logger.info(
-                f'JOB: {target.id} | TARGET: {target.username} | DEPTH {target.own_depth}'
+                f'JOB: {target.job_id} | TARGET: {target.username} | DEPTH {target.own_depth}'
             )
             scraper = AuthenticatedScraper(
                 headless=True,

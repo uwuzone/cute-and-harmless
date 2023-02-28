@@ -1,11 +1,12 @@
 from sqlalchemy import URL, Engine, create_engine
 
-from .base import Base, ScrapeBase
+from .base import Base, JobBase, ScrapeBase
 
 
 def init_db(engine: Engine):
     Base.metadata.create_all(engine)
     ScrapeBase.metadata.create_all(engine)
+    JobBase.metadata.create_all(engine)
 
 
 def get_db_engine(echo: bool = False) -> Engine:

@@ -1,11 +1,13 @@
 import argparse
+from typing import List
 
 from sqlalchemy.orm import Session
 
 from models import get_db_engine
-from models.target import Worker
-from models.target import Target
-from models.target import insert_targets_on_conflict_ignore, new_job_id
+from models.job import Worker
+from models.job import FollowingJob
+from models.job import TweetJob
+from models.job import insert_tweet_jobs_on_conflict_ignore, insert_following_jobs_on_conflict_ignore, new_job_id
 
 
 def add_worker(twitter_username: str, twitter_password: str):
@@ -20,19 +22,28 @@ def add_worker(twitter_username: str, twitter_password: str):
         session.commit()
 
 
-def submit_job(username: str, max_followers: int, max_depth: int, max_tweets: int):
+def submit_job(usernames: List[str], max_followers: int, max_depth: int, max_tweets: int):
     engine = get_db_engine()
     with Session(engine) as session:
-        target = Target(
-            id=new_job_id(username),
-            username=username,
-            max_depth=max_depth,
-            max_tweets=max_tweets,
-            max_followers=max_followers,
-            own_depth=0,
-        )
-        session.execute(insert_targets_on_conflict_ignore([target]))
-        session.commit()
+        for username in usernames:
+            job_id = new_job_id(username)
+            following_job = FollowingJob(
+                job_id=job_id,
+                username=username,
+                max_depth=max_depth,
+                max_tweets=max_tweets,
+                max_followers=max_followers,
+                own_depth=0,
+            )
+            tweet_job = TweetJob(
+                job_id=job_id,
+                username=username,
+                max_tweets=max_tweets
+            )
+            session.execute(
+                insert_following_jobs_on_conflict_ignore([following_job]))
+            session.execute(insert_tweet_jobs_on_conflict_ignore([tweet_job]))
+            session.commit()
 
 
 def main():
@@ -49,7 +60,7 @@ def main():
     submit_job_parser = subparsers.add_parser(
         'submit-job', help='Add a scraping target')
     submit_job_parser .add_argument(
-        'username', help='Twitter username for scraper')
+        'usernames', nargs='+', help='Twitter username for scraper')
     submit_job_parser .add_argument(
         '--max-depth', type=int, help='Max crawl depth', default=4)
     submit_job_parser .add_argument(
@@ -63,7 +74,7 @@ def main():
         add_worker(args.username, args.password)
     if args.command == 'submit-job':
         submit_job(
-            args.username,
+            usernames=args.usernames,
             max_followers=args.max_followers,
             max_tweets=args.max_tweets,
             max_depth=args.max_depth

@@ -20,7 +20,7 @@ def wrap_exceptions(func):
         except tw_exceptions.UserNotFound:
             raise exceptions.UserNotFound(self._username)
         except tw_exceptions.UserProtected:
-            print('WTF')
+            print('WTF?')
             raise exceptions.UserProtected(self._username)
         except tw_exceptions.UnknownError as e:
             raise exceptions.UnknownException(self._username, e.message)
@@ -77,7 +77,7 @@ class UnauthenticatedScraper(Scraper):
     @wrap_exceptions
     def get_tweets(self, include_replies: bool = True, max_tweets: int = 200) -> Generator[Tweet, None, None]:
         pages = max(ceil(max_tweets / 20), 1)
-        # XXX: this is untyped in the library :skull:
+        # this is untyped in the library :skull:
         all_tweets = self._get_bot(self._username).get_tweets(
             replies=include_replies,
             pages=pages,
@@ -86,8 +86,6 @@ class UnauthenticatedScraper(Scraper):
         for _tweet in all_tweets:
             raw: dict = _tweet._get_original_tweet()
             yield Tweet(
-                # TODO(fork): these fields all come from fuken around in the
-                # repl as this is untyped in the library
                 rest_id=_tweet.id,
                 created_on=_tweet.created_on,
                 content=_tweet.text,
