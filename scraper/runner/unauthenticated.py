@@ -5,7 +5,8 @@ from loguru import logger
 from sqlalchemy.orm import Session
 
 from models import get_db_engine
-from models.job import Job, create_child_job, insert_jobs_on_conflict_ignore
+from models.job import Job, JobSource
+from models.job import create_child_job, insert_jobs_on_conflict_ignore
 from runner.base import take_job, wrap_scraper_exceptions_and_logging
 from scrapers.unauthenticated import UnauthenticatedScraper
 
@@ -23,8 +24,10 @@ def scrape(session: Session, scraper: UnauthenticatedScraper, job: Job):
         if tweet.is_reply and job.own_depth < job.max_depth:
             session.execute(
                 insert_jobs_on_conflict_ignore(
-                    create_child_job(job, tweet.reply_to_account_username, authenticated=False),
-                    create_child_job(job, tweet.reply_to_account_username, authenticated=True)
+                    create_child_job(job, tweet.reply_to_account_username,
+                                     source=JobSource.TWEET_REPLY, authenticated=False),
+                    create_child_job(job, tweet.reply_to_account_username,
+                                     source=JobSource.TWEET_REPLY, authenticated=True)
                 )
             )
         session.commit()

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import datetime
-from enum import Enum
 
+from enum import Enum
 from typing import Optional
 from sqlalchemy import UniqueConstraint
 
@@ -19,6 +19,12 @@ class JobStatus(Enum):
     RUNNING = 'running'
     FINISHED = 'finished'
     ERROR = 'error'
+
+
+class JobSource(Enum):
+    MANUAL = 'manual'
+    TWEET_REPLY = 'reply'
+    FOLLOWING = 'following'
 
 
 class JobType(Enum):
@@ -51,8 +57,11 @@ class Job(Base):
     __table_args__ = (UniqueConstraint('job_id', 'username',
                       'is_authenticated', name='job_uniqueness'),)
 
+    # makes things easier to have a single unique ID to refer to
     internal_id: Mapped[int] = mapped_column(
         primary_key=True, autoincrement=True)
+
+    source: Mapped[JobSource]
 
     job_id: Mapped[str]
     username: Mapped[str]
@@ -68,12 +77,13 @@ class Job(Base):
     max_followers: Mapped[int]
 
 
-def create_child_job(job: Job, username: str, authenticated: Optional[bool] = None):
+def create_child_job(job: Job, username: str, source: JobSource, authenticated: Optional[bool] = None):
     '''Make a child target with settings copied and depth incremented.
     Caller must save.'''
-    return job.__class__(
+    return Job(
         job_id=job.job_id,
         username=username,
+        source=source,
         is_authenticated=authenticated if authenticated is not None else job.is_authenticated,
         own_depth=job.own_depth+1,
         max_tweets=job.max_tweets,

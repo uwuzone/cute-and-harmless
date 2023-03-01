@@ -1,7 +1,7 @@
 import datetime
 
 from typing import Optional
-# from sqlalchemy import ForeignKey
+
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import Mapped
 

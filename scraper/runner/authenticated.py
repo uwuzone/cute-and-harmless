@@ -11,7 +11,8 @@ from sqlalchemy.orm import Session
 
 from common.logging import logger
 from models import get_db_engine
-from models.job import Job, Worker, create_child_job, insert_jobs_on_conflict_ignore
+from models.job import Job, JobSource, Worker
+from models.job import create_child_job, insert_jobs_on_conflict_ignore
 from runner.base import wrap_scraper_exceptions_and_logging, take_job
 from scrapers.authenticated import AuthenticatedScraper
 from vendor.scweet.credentials import Credentials
@@ -47,9 +48,9 @@ def scrape(session: Session, scraper: AuthenticatedScraper, job: Job):
             session.execute(
                 insert_jobs_on_conflict_ignore(
                     create_child_job(
-                        job, follow.follows_username, authenticated=True),
+                        job, follow.follows_username, source=JobSource.FOLLOWING, authenticated=True),
                     create_child_job(
-                        job, follow.follows_username, authenticated=False),
+                        job, follow.follows_username, source=JobSource.FOLLOWING, authenticated=False),
                 )
             )
         session.commit()

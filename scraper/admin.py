@@ -5,7 +5,7 @@ from typing import List
 from sqlalchemy.orm import Session
 
 from models import get_db_engine
-from models.job import Job, Worker
+from models.job import Job, JobSource, Worker
 from models.job import insert_jobs_on_conflict_ignore, new_job_id
 from runner import authenticated, unauthenticated
 
@@ -52,6 +52,7 @@ def submit_job(usernames: List[str], max_followers: int, max_depth: int, max_twe
                     Job(
                         job_id=job_id,
                         username=username,
+                        source=JobSource.MANUAL,
                         max_depth=max_depth,
                         max_tweets=max_tweets,
                         max_followers=max_followers,
@@ -61,6 +62,7 @@ def submit_job(usernames: List[str], max_followers: int, max_depth: int, max_twe
                     Job(
                         job_id=job_id,
                         username=username,
+                        source=JobSource.MANUAL,
                         max_depth=max_depth,
                         max_tweets=max_tweets,
                         max_followers=max_followers,
