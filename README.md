@@ -1,9 +1,3 @@
-# silly little twitter cralwer
-
-- **target** - a user to scrape
-- **job** - the task of scraping a graph of users connected to some root target
-  - all targets acquired by crawling from a given root target will have the same job ID by default
-
 # Getting started
 
 Set this environment variables (try https://direnv.net/)
@@ -22,9 +16,14 @@ export CUTE_PG_PORT=5432
 ; docker-compose up -d
 ; cd scraper
 ; pipenv install
-; pipenv run python runner.py  # start the watcher/server/whatever
+; pipenv run python runner.py
 ; pipenv run python admin.py submit-jobs [usernames go here]
 ```
+
+# Deploying
+
+- Deploy runner in lambda for unauthenticated jobs
+- Deploy runner on something with stable IP for authenticated jobs
 
 # TODO
 

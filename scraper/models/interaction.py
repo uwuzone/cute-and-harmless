@@ -55,6 +55,9 @@ class Tweet(ScrapeBase):
     # = mapped_column(ForeignKey('account.rest_id'))
     reply_to_account_rest_id: Mapped[Optional[str]]
 
+    # denormalized for convenience in dev, though future version can remove with some work
+    reply_to_account_username: Mapped[Optional[str]]
+
     # = mapped_column(ForeignKey('tweet.rest_id'))
     reply_to_tweet_rest_id: Mapped[Optional[str]]
 

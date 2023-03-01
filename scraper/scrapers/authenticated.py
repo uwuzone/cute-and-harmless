@@ -29,6 +29,7 @@ def wrap_exceptions(func):
 
 
 class AuthenticatedScraper(Scraper):
+    _jobs_handled: int
     _credentials: Credentials
     _driver: Optional[webdriver.Remote]
     _unauthenticated: Optional[UnauthenticatedScraper]
@@ -46,6 +47,7 @@ class AuthenticatedScraper(Scraper):
         profile_dir: Optional[str] = None,
         wait_time: int = 2
     ):
+        self._jobs_handled = 0
         self._credentials = credentials
         self._unauthenticated = None
         self._driver = driver

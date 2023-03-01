@@ -4,10 +4,8 @@ from typing import List
 from sqlalchemy.orm import Session
 
 from models import get_db_engine
-from models.job import Worker
-from models.job import FollowingJob
-from models.job import TweetJob
-from models.job import insert_tweet_jobs_on_conflict_ignore, insert_following_jobs_on_conflict_ignore, new_job_id
+from models.job import Job, Worker
+from models.job import insert_jobs_on_conflict_ignore, new_job_id
 
 
 def add_worker(twitter_username: str, twitter_password: str):
@@ -27,22 +25,28 @@ def submit_job(usernames: List[str], max_followers: int, max_depth: int, max_twe
     with Session(engine) as session:
         for username in usernames:
             job_id = new_job_id(username)
-            following_job = FollowingJob(
-                job_id=job_id,
-                username=username,
-                max_depth=max_depth,
-                max_tweets=max_tweets,
-                max_followers=max_followers,
-                own_depth=0,
-            )
-            tweet_job = TweetJob(
-                job_id=job_id,
-                username=username,
-                max_tweets=max_tweets
-            )
             session.execute(
-                insert_following_jobs_on_conflict_ignore([following_job]))
-            session.execute(insert_tweet_jobs_on_conflict_ignore([tweet_job]))
+                insert_jobs_on_conflict_ignore(
+                    Job(
+                        job_id=job_id,
+                        username=username,
+                        max_depth=max_depth,
+                        max_tweets=max_tweets,
+                        max_followers=max_followers,
+                        own_depth=0,
+                        is_authenticated=True
+                    ),
+                    Job(
+                        job_id=job_id,
+                        username=username,
+                        max_depth=max_depth,
+                        max_tweets=max_tweets,
+                        max_followers=max_followers,
+                        own_depth=0,
+                        is_authenticated=False
+                    )
+                )
+            )
             session.commit()
             print(f'Submitted job {job_id}')
 

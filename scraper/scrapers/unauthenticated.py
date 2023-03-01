@@ -76,7 +76,7 @@ class UnauthenticatedScraper(Scraper):
     # unauthenticated, it's low risk
     @wrap_exceptions
     def get_tweets(self, include_replies: bool = True, max_tweets: int = 200) -> Generator[Tweet, None, None]:
-        pages = max(ceil(max_tweets / 20), 1)
+        pages = max(ceil(max_tweets / 40), 1)
         # this is untyped in the library :skull:
         all_tweets = self._get_bot(self._username).get_tweets(
             replies=include_replies,
@@ -96,6 +96,7 @@ class UnauthenticatedScraper(Scraper):
                 quote_count=_tweet.quote_counts,
                 is_retweet=_tweet.is_retweet,
                 is_reply=_tweet.is_reply,
+                reply_to_account_username=_tweet.reply_to,
                 reply_to_account_rest_id=raw.get(
                     'in_reply_to_user_id_str', None),
                 reply_to_tweet_rest_id=raw.get(

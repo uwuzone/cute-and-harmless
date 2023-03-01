@@ -1,13 +1,30 @@
 from __future__ import annotations
-import datetime
 
-from typing import List, Optional, Tuple
+import datetime
+from enum import Enum
+
+from typing import Optional
+from sqlalchemy import UniqueConstraint
 
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import Mapped
+from sqlalchemy.sql import func
 
-from models.base import Base, JobBase
+from models.base import Base
+
+
+class JobStatus(Enum):
+    NEW = 'new'
+    RUNNING = 'running'
+    FINISHED = 'finished'
+    ERROR = 'error'
+
+
+class JobType(Enum):
+    # get new targets (using following/followers)
+    FOLLOWING = 'following'
+    TWEETS = 'tweets'
 
 
 def new_job_id(root_username: str):
@@ -24,20 +41,21 @@ class Worker(Base):
     last_active: Mapped[Optional[datetime.datetime]]
 
 
-class TweetJob(JobBase):
-    __tablename__ = 'tweet_job'
+class Job(Base):
+    __tablename__ = 'job'
 
-    max_tweets: Mapped[int]
+    __table_args__ = (UniqueConstraint('job_id', 'username',
+                      'is_authenticated', name='job_uniqueness'),)
 
+    internal_id: Mapped[int] = mapped_column(
+        primary_key=True, autoincrement=True)
 
-class FollowingJob(JobBase):
-    '''
-    Job for scraping an account's "following" list. This kind of job requires
-    authentication.
+    job_id: Mapped[str]
+    username: Mapped[str]
+    is_authenticated: Mapped[bool]
 
-    if own_depth = max_crawl_depth then worker should not enqueue new accounts that it sees
-    '''
-    __tablename__ = 'following_job'
+    status: Mapped[JobStatus] = mapped_column(default=JobStatus.NEW)
+    created_at: Mapped[datetime.datetime] = mapped_column(default=func.now())
 
     # 0 if this is the root
     own_depth: Mapped[int]
@@ -45,52 +63,34 @@ class FollowingJob(JobBase):
     max_tweets: Mapped[int]
     max_followers: Mapped[int]
 
-    def create_child(self, username: str) -> Tuple[FollowingJob, TweetJob]:
-        '''Make a child target with settings copied and depth incremented.
-        Caller must save.'''
-        following = FollowingJob(
-            job_id=self.job_id,
-            username=username,
-            own_depth=self.own_depth+1,
-            max_tweets=self.max_tweets,
-            max_depth=self.max_depth,
-            max_followers=self.max_followers,
-        )
-        tweets = TweetJob(
-            job_id=self.job_id,
-            username=username,
-            max_tweets=self.max_tweets,
-        )
 
-        return [following, tweets]
+def create_child_job(job: Job, username: str):
+    '''Make a child target with settings copied and depth incremented.
+    Caller must save.'''
+    return job.__class__(
+        job_id=job.job_id,
+        username=username,
+        is_authenticated=job.is_authenticated,
+        own_depth=job.own_depth+1,
+        max_tweets=job.max_tweets,
+        max_depth=job.max_depth,
+        max_followers=job.max_followers,
+    )
 
 
-def insert_following_jobs_on_conflict_ignore(following_jobs: List[FollowingJob]):
+def insert_jobs_on_conflict_ignore(*following_jobs: Job):
     '''
     Insert targets, ignore duplicates
     '''
-    return pg_insert(FollowingJob).values([
+    return pg_insert(Job).values([
         dict(
             job_id=job.job_id,
             username=job.username,
             own_depth=job.own_depth,
             max_depth=job.max_depth,
             max_tweets=job.max_tweets,
-            max_followers=job.max_followers
+            max_followers=job.max_followers,
+            is_authenticated=job.is_authenticated
         )
         for job in following_jobs
-    ]).on_conflict_do_nothing(index_elements=[FollowingJob.job_id, FollowingJob.username])
-
-
-def insert_tweet_jobs_on_conflict_ignore(tweet_jobs: List[TweetJob]):
-    '''
-    Insert targets, ignore duplicates
-    '''
-    return pg_insert(TweetJob).values([
-        dict(
-            job_id=job.job_id,
-            username=job.username,
-            max_tweets=job.max_tweets,
-        )
-        for job in tweet_jobs
-    ]).on_conflict_do_nothing(index_elements=[TweetJob.job_id, TweetJob.username])
+    ]).on_conflict_do_nothing(index_elements=[Job.job_id, Job.username, Job.is_authenticated])
