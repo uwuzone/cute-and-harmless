@@ -1,34 +1,43 @@
-FROM --platform=linux/amd64 public.ecr.aws/lambda/python:3.9 as build-image
+ARG LAMBDA_TASK_ROOT=/var/task
 
-RUN yum update && \
-    yum install -y \
-    gcc \
+FROM python:buster as build-image
+
+ARG LAMBDA_TASK_ROOT
+
+# add basic deps
+RUN apt update && \
+    apt install -y \
     g++ \
     make \
     cmake \
     unzip \
-    libcurl4-openssl-dev \
-    postgresql-devel
+    libcurl4-openssl-dev
 
 RUN pip install pipenv
 
-RUN mkdir -p ${LAMBDA_TASK_ROOT}
+RUN pip install awslambdaric --target ${LAMBDA_TASK_ROOT}
 
+WORKDIR ${LAMBDA_TASK_ROOT}
+
+# add app deps
 COPY scraper/Pipfile ${LAMBDA_TASK_ROOT}
 
 COPY scraper/Pipfile.lock ${LAMBDA_TASK_ROOT}
 
 RUN pipenv requirements | pip install -r /dev/stdin --target ${LAMBDA_TASK_ROOT}
 
-FROM --platform=linux/amd64 public.ecr.aws/lambda/python:3.9
+# build final image
+FROM python:buster
 
-RUN yum update && \
-    yum install -y postgresql-libs && \
-    yum clean packages
+ARG LAMBDA_TASK_ROOT
+
+WORKDIR ${LAMBDA_TASK_ROOT}
 
 COPY --from=build-image ${LAMBDA_TASK_ROOT} ${LAMBDA_TASK_ROOT}
 
-# why the fuck is it like this
+# why tf is it like this
 COPY scraper ${LAMBDA_TASK_ROOT}
+
+ENTRYPOINT [ "/usr/local/bin/python", "-m", "awslambdaric" ]
 
 CMD [ "lambda.handler" ]

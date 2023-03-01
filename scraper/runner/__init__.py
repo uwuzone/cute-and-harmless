@@ -22,4 +22,4 @@ async def run_unauthenticated(concurrency: int, max_jobs: Optional[int] = None) 
     '''
     from runner import unauthenticated
 
-    await unauthenticated.run(concurrency=concurrency, max_jobs=max_jobs)
+    return await unauthenticated.run(concurrency=concurrency, max_jobs=max_jobs)

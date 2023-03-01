@@ -40,7 +40,6 @@ def scrape(session: Session, scraper: UnauthenticatedScraper, job: Job):
     logger.info(f'saved {n_tweets} tweets')
 
 
-
 async def run(concurrency: int = 8, max_jobs: Optional[int] = None):
     engine = get_db_engine()
 
@@ -65,3 +64,5 @@ async def run(concurrency: int = 8, max_jobs: Optional[int] = None):
     await asyncio.gather(*[
         worker(i + 1) for i in range(concurrency)
     ])
+
+    return progress._usernames
