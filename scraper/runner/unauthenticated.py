@@ -23,7 +23,8 @@ def scrape(session: Session, scraper: UnauthenticatedScraper, job: Job):
         if tweet.is_reply and job.own_depth < job.max_depth:
             session.execute(
                 insert_jobs_on_conflict_ignore(
-                    create_child_job(job, tweet.reply_to_account_username)
+                    create_child_job(job, tweet.reply_to_account_username, authenticated=False),
+                    create_child_job(job, tweet.reply_to_account_username, authenticated=True)
                 )
             )
         session.commit()

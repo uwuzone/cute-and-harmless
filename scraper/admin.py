@@ -77,7 +77,7 @@ def main():
 
     if args.command == 'add-worker':
         add_worker(args.username, args.password)
-    if args.command == 'submit-job':
+    elif args.command == 'submit-job':
         submit_job(
             usernames=args.usernames,
             max_followers=args.max_followers,

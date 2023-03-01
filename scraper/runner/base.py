@@ -29,6 +29,7 @@ async def take_job(session: Session, authenticated: bool, polling_interval: int 
 
         if len(jobs) > 1:
             raise Exception('my friend your sql are fucked 🙏😑')
+
         if len(jobs) == 1:
             session.commit()
             return jobs[0]

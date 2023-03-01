@@ -35,6 +35,7 @@ class AuthenticatedScraper(Scraper):
     _unauthenticated: Optional[UnauthenticatedScraper]
     _user_data_dir: Optional[str]
     _profile_dir: Optional[str]
+    _proxy: Optional[str]
     _headless: bool
 
     def __init__(
@@ -45,7 +46,8 @@ class AuthenticatedScraper(Scraper):
         headless: Optional[bool] = False,
         user_data_dir: Optional[str] = None,
         profile_dir: Optional[str] = None,
-        wait_time: int = 2
+        proxy: Optional[str] = None,
+        wait_time: int = 2,
     ):
         self._jobs_handled = 0
         self._credentials = credentials
@@ -54,6 +56,7 @@ class AuthenticatedScraper(Scraper):
         self._user_data_dir = user_data_dir
         self._profile_dir = profile_dir
         self._headless = headless or False
+        self._proxy = proxy
         super().__init__(username, wait_time)
 
     def id(self) -> str:
@@ -67,7 +70,8 @@ class AuthenticatedScraper(Scraper):
             self._driver = init_driver(
                 headless=self._headless,
                 profile_dir=self._profile_dir,
-                user_data_dir=self._user_data_dir
+                user_data_dir=self._user_data_dir,
+                proxy=self._proxy
             )
         return self._driver
 

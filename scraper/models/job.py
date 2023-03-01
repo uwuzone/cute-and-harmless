@@ -37,8 +37,12 @@ class Worker(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     twitter_username: Mapped[str]
     twitter_password: Mapped[str]
+    proxy: Mapped[Optional[str]]
 
     last_active: Mapped[Optional[datetime.datetime]]
+
+    __table_args__ = (UniqueConstraint(
+        'twitter_username', name='worker_uniqueness'),)
 
 
 class Job(Base):
@@ -64,13 +68,13 @@ class Job(Base):
     max_followers: Mapped[int]
 
 
-def create_child_job(job: Job, username: str):
+def create_child_job(job: Job, username: str, authenticated: Optional[bool] = None):
     '''Make a child target with settings copied and depth incremented.
     Caller must save.'''
     return job.__class__(
         job_id=job.job_id,
         username=username,
-        is_authenticated=job.is_authenticated,
+        is_authenticated=authenticated if authenticated is not None else job.is_authenticated,
         own_depth=job.own_depth+1,
         max_tweets=job.max_tweets,
         max_depth=job.max_depth,

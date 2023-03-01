@@ -33,14 +33,14 @@ def init_driver(headless=True, proxy=None, profile_dir: Optional[str] = None, us
         options.headless = False
     options.add_argument('log-level=3')
     if proxy is not None:
-        options.add_argument(f'--proxy-server="{proxy}"')
+        options.add_argument(f'--proxy-server={proxy}')
         logger.debug(f'chrome: using proxy: {proxy}')
     if profile_dir is not None:
-        options.add_argument(f'--profile-director="{profile_dir}"')
+        options.add_argument(f'--profile-director={profile_dir}')
     if user_data_dir is not None:
-        options.add_argument(f'--user-data-dir="{user_data_dir}"')
+        options.add_argument(f'--user-data-dir={user_data_dir}')
     if user_agent is not None:
-        options.add_argument(f'--user-agent="{user_agent}"')
+        options.add_argument(f'--user-agent={user_agent}')
 
     driver = webdriver.Chrome(options=options, executable_path=driver_path)
     driver.set_page_load_timeout(100)

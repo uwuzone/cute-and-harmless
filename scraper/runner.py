@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import asyncio
 
-from runner import unauthenticated
+from runner import authenticated, unauthenticated
 
 
 async def main():
     await asyncio.gather(
-        unauthenticated.run(concurrency=2)
+        authenticated.run(concurrency=1),
+        unauthenticated.run(concurrency=2),
     )
 
 

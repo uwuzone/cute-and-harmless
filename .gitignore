@@ -3,4 +3,6 @@
 
 .envrc
 
+.scraper-*
+
 __pycache__
