@@ -13,11 +13,11 @@ def get_db_engine(echo: bool = False) -> Engine:
 
     url = URL.create(
         drivername='postgresql',
-        username=env.get('CUTE_PG_USER'),
-        password=env.get('CUTE_PG_PASSWORD'),
-        host=env.get('CUTE_PG_HOST'),
-        database=env.get('CUTE_PG_DATABASE'),
-        port=env.get('CUTE_PG_PORT')
+        username=env.get('SCRAPER_PG_USER'),
+        password=env.get('SCRAPER_PG_PASSWORD'),
+        host=env.get('SCRAPER_PG_HOST'),
+        database=env.get('SCRAPER_PG_DATABASE'),
+        port=env.get('SCRAPER_PG_PORT')
     )
 
     engine = create_engine(url, echo=echo)

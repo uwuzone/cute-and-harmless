@@ -1,0 +1,34 @@
+FROM --platform=linux/amd64 public.ecr.aws/lambda/python:3.9 as build-image
+
+RUN yum update && \
+    yum install -y \
+    gcc \
+    g++ \
+    make \
+    cmake \
+    unzip \
+    libcurl4-openssl-dev \
+    postgresql-devel
+
+RUN pip install pipenv
+
+RUN mkdir -p ${LAMBDA_TASK_ROOT}
+
+COPY scraper/Pipfile ${LAMBDA_TASK_ROOT}
+
+COPY scraper/Pipfile.lock ${LAMBDA_TASK_ROOT}
+
+RUN pipenv requirements | pip install -r /dev/stdin --target ${LAMBDA_TASK_ROOT}
+
+FROM --platform=linux/amd64 public.ecr.aws/lambda/python:3.9
+
+RUN yum update && \
+    yum install -y postgresql-libs && \
+    yum clean packages
+
+COPY --from=build-image ${LAMBDA_TASK_ROOT} ${LAMBDA_TASK_ROOT}
+
+# why the fuck is it like this
+COPY scraper ${LAMBDA_TASK_ROOT}
+
+CMD [ "lambda.handler" ]

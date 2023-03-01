@@ -7,27 +7,21 @@ from sqlalchemy.orm import Session
 from models import get_db_engine
 from models.job import Job, JobSource, Worker
 from models.job import insert_jobs_on_conflict_ignore, new_job_id
-from runner import authenticated, unauthenticated
-
-
-async def run_scraper(anon_concurrency: int, auth_concurrency: int, auth_cooldown: int, chrome_data_basedir: str):
-    await asyncio.gather(
-        authenticated.run(
-            concurrency=auth_concurrency,
-            worker_cooldown=auth_cooldown,
-            chrome_data_basedir=chrome_data_basedir
-        ),
-        unauthenticated.run(concurrency=anon_concurrency),
-    )
+from runner import run_authenticated, run_unauthenticated
 
 
 def start_scraper(anon_concurrency: int, auth_concurrency: int, auth_cooldown: int, chrome_data_basedir: str):
-    asyncio.run(run_scraper(
-        anon_concurrency,
-        auth_concurrency,
-        auth_cooldown,
-        chrome_data_basedir
-    ))
+    async def run():
+        await asyncio.gather(
+            run_authenticated(
+                concurrency=auth_concurrency,
+                worker_cooldown=auth_cooldown,
+                chrome_data_basedir=chrome_data_basedir
+            ),
+            run_unauthenticated(concurrency=anon_concurrency),
+        )
+
+    asyncio.run(run())
 
 
 def add_worker(twitter_username: str, twitter_password: str):

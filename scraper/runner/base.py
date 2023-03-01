@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from typing import List
 
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
@@ -79,3 +80,22 @@ def wrap_scraper_exceptions_and_logging(func):
                 finish()
 
     return wrapped
+
+
+class Progress:
+    _usernames: List[str]
+    _lock: asyncio.Lock
+
+    def __init__(self) -> None:
+        self._usernames = []
+        self._lock = asyncio.Lock()
+
+    async def push(self, username: str) -> int:
+        '''Push a username. Return new length of list.'''
+        async with self._lock:
+            self._usernames.append(username)
+            return len(self._usernames)
+
+    async def progress(self) -> int:
+        async with self._lock:
+            return len(self._usernames)

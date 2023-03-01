@@ -5,3 +5,17 @@ services:
     image: postgres:14-alpine
     environment:
       - POSTGRES_PASSWORD=dev
+
+  lambda:
+    ports:
+      - 9000:8080
+    image: twitterscraper:lambda
+    build:
+      context: .
+      dockerfile: build/Dockerfile.lambda
+    environment:
+      - SCRAPER_PG_HOST=db
+      - SCRAPER_PG_USER=postgres
+      - SCRAPER_PG_PASSWORD=dev
+      - SCRAPER_PG_DATABASE=postgres
+      - SCRAPER_PG_PORT=5432
