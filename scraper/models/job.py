@@ -99,6 +99,7 @@ def insert_jobs_on_conflict_ignore(*following_jobs: Job):
     return pg_insert(Job).values([
         dict(
             job_id=job.job_id,
+            source=job.source,
             username=job.username,
             own_depth=job.own_depth,
             max_depth=job.max_depth,
