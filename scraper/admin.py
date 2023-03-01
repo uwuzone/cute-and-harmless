@@ -1,24 +1,33 @@
 import argparse
 import asyncio
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
 from models import get_db_engine
 from models.job import Job, JobSource, Worker
 from models.job import insert_jobs_on_conflict_ignore, new_job_id
-from runner import run_authenticated, run_unauthenticated
+from runner import unauthenticated, authenticated
 
 
-def start_scraper(anon_concurrency: int, auth_concurrency: int, auth_cooldown: int, chrome_data_basedir: str):
+def start_scraper(
+        anon_concurrency: int,
+        auth_concurrency: int,
+        auth_cooldown: int,
+        anon_cooldown: Optional[int],
+        chrome_data_basedir: str
+    ):
     async def run():
         await asyncio.gather(
-            run_authenticated(
+            authenticated.run(
                 concurrency=auth_concurrency,
                 worker_cooldown=auth_cooldown,
                 chrome_data_basedir=chrome_data_basedir
             ),
-            run_unauthenticated(concurrency=anon_concurrency),
+            unauthenticated.run(
+                concurrency=anon_concurrency,
+                cooldown=anon_cooldown
+            ),
         )
 
     asyncio.run(run())
@@ -82,6 +91,8 @@ def main():
     start_parser.add_argument(
         '--authenticated-worker-cooldown', type=int, help='Cooldown for authenticated workers (seconds)', default=60*60*8)
     start_parser.add_argument(
+        '--anonymous-worker-cooldown', type=int, help='Cooldown for anonymous workers (seconds)', default=None)
+    start_parser.add_argument(
         '--chrome-data-basedir', type=str, help='Where to store chrome data', default='.scraper-chrome-data')
 
     add_worker_parser = subparsers.add_parser(
@@ -109,6 +120,7 @@ def main():
             auth_concurrency=args.max_authenticated,
             anon_concurrency=args.max_anonymous,
             auth_cooldown=args.authenticated_worker_cooldown,
+            anon_cooldown=args.anonymous_worker_cooldown,
             chrome_data_basedir=args.chrome_data_basedir,
         )
     elif args.command == 'add-worker':

@@ -40,7 +40,7 @@ def scrape(session: Session, scraper: UnauthenticatedScraper, job: Job):
     logger.info(f'saved {n_tweets} tweets')
 
 
-async def run(concurrency: int = 8, max_jobs: Optional[int] = None):
+async def run(concurrency: int = 8, max_jobs: Optional[int] = None, cooldown: Optional[int] = None):
     engine = get_db_engine()
 
     progress = Progress()
@@ -60,6 +60,9 @@ async def run(concurrency: int = 8, max_jobs: Optional[int] = None):
 
             if max_jobs is not None and await progress.progress() >= max_jobs:
                 return
+
+            if cooldown is not None:
+                await asyncio.sleep(cooldown)
 
     await asyncio.gather(*[
         worker(i + 1) for i in range(concurrency)
