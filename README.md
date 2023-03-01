@@ -16,7 +16,7 @@ export CUTE_PG_PORT=5432
 ; docker-compose up -d
 ; cd scraper
 ; pipenv install
-; pipenv run python runner.py
+; pipenv run python admin.py start
 ; pipenv run python admin.py submit-jobs [usernames go here]
 ```
 

@@ -1,10 +1,8 @@
 import datetime
 
-from typing import List
 from sqlalchemy.orm import Mapped
-from sqlalchemy.orm import mapped_column, relationship
+from sqlalchemy.orm import mapped_column
 
-from models.interaction import Tweet
 from models.base import ScrapeBase
 
 

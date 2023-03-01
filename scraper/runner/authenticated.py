@@ -17,22 +17,20 @@ from scrapers.authenticated import AuthenticatedScraper
 from vendor.scweet.credentials import Credentials
 
 
-def init_chrome_dirs():
+def init_chrome_dirs(basedir: str):
     try:
-        os.makedirs('.scraper-chrome-data/user-data')
-        print('made .scraper-chrome-data/user-data')
-        os.makedirs('.scraper-chrome-data/profile')
-        print('made .scraper-chrome-data/profile')
+        os.makedirs(os.path.join(basedir, 'user-data'))
+        os.makedirs(os.path.join(basedir, 'profile'))
     except FileExistsError:
         pass
 
 
-def get_user_data_dir(name: str):
-    return f'.scraper-chrome-data/user-data/{name}'
+def get_user_data_dir(basedir: str, name: str):
+    return os.path.join(basedir, 'user-data', name)
 
 
-def get_profile_dir(name: str):
-    return f'.scraper-chrome-data/profile/{name}'
+def get_profile_dir(basedir: str, name: str):
+    return os.path.join(basedir, 'profile', name)
 
 
 @wrap_scraper_exceptions_and_logging
@@ -59,7 +57,7 @@ def scrape(session: Session, scraper: AuthenticatedScraper, job: Job):
     logger.debug(f'saved {n_following} following')
 
 
-async def take_worker(session: Session, polling_interval: int = 3, cooldown_period: int = 60 * 60 * 8):
+async def take_worker(session: Session, cooldown_period: int, polling_interval: int = 3,):
     '''
     Get next available worker. Cooldown is based on db value.
 
@@ -96,19 +94,19 @@ async def take_worker(session: Session, polling_interval: int = 3, cooldown_peri
         await asyncio.sleep(polling_interval)
 
 
-async def run(concurrency: int = 1):
+async def run(concurrency: int, worker_cooldown: int, chrome_data_basedir: str):
     '''
     NB: concurrency should be kept pretty low. Also, it's bounded by how many
     scraper accounts you have available.
     '''
     engine = get_db_engine()
-    init_chrome_dirs()
+    init_chrome_dirs(chrome_data_basedir)
 
     async def worker(i: int):
         logger.debug(f'Starting authenticated worker {i}/{concurrency}')
         while True:
             with Session(engine) as session:
-                worker_config = await take_worker(session, cooldown_period=1)
+                worker_config = await take_worker(session, cooldown_period=worker_cooldown)
                 job = await take_job(session, authenticated=True)
                 scraper = AuthenticatedScraper(
                     headless=True,
@@ -118,9 +116,13 @@ async def run(concurrency: int = 1):
                         worker_config.twitter_password,
                     ),
                     profile_dir=get_profile_dir(
-                        worker_config.twitter_username),
+                        chrome_data_basedir,
+                        worker_config.twitter_username,
+                    ),
                     user_data_dir=get_user_data_dir(
-                        worker_config.twitter_username),
+                        chrome_data_basedir,
+                        worker_config.twitter_username,
+                    ),
                     wait_time=10
                 )
                 await asyncio.to_thread(scrape, session, scraper, job)
