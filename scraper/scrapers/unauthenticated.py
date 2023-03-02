@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import time
 from math import ceil
 from typing import Generator, Optional
 
 from tweety import exceptions_ as tw_exceptions
 from tweety.bot import Twitter as Bot
+from tweety.types.usertweet import Tweet as TwTweet
 
 from models.account import Account
 from models.interaction import Tweet
@@ -26,6 +28,15 @@ def wrap_exceptions(func):
             raise exceptions.UnknownException(self._username, e.message)
 
     return wrapped
+
+
+def as_generator(bot: Bot, pages: int, get_replies: bool, wait_time: int) -> Generator[TwTweet, None, None]:
+    fetcher = bot.get_tweets(0)
+
+    for page in range(1, pages + 1):
+        yield from fetcher.get_next_page(user_id=fetcher.user_id, get_replies=get_replies)
+        if fetcher.is_next_page and page != pages:
+            time.sleep(wait_time)
 
 
 class UnauthenticatedScraper(Scraper):
@@ -71,19 +82,11 @@ class UnauthenticatedScraper(Scraper):
             favourites_count=user_info.fast_followers_count,
         )
 
-    # TODO: a generator fork of tweety is preferable because we won't lose
-    # progress if fetching fails partway through. however, since this is
-    # unauthenticated, it's low risk
     @wrap_exceptions
     def get_tweets(self, include_replies: bool = True, max_tweets: int = 200) -> Generator[Tweet, None, None]:
         pages = max(ceil(max_tweets / 40), 1)
-        # this is untyped in the library :skull:
-        all_tweets = self._get_bot(self._username).get_tweets(
-            replies=include_replies,
-            pages=pages,
-            wait_time=self._wait_time
-        )
-        for _tweet in all_tweets:
+        tw = self._get_bot(self._username)
+        for _tweet in as_generator(tw, pages, include_replies, self._wait_time):
             raw: dict = _tweet._get_original_tweet()
             yield Tweet(
                 rest_id=_tweet.id,
@@ -101,7 +104,6 @@ class UnauthenticatedScraper(Scraper):
                     'in_reply_to_user_id_str', None),
                 reply_to_tweet_rest_id=raw.get(
                     'in_reply_to_status_id_str', None),
-                # tw_is_possibly_sensitive=_tweet.is_possibly_sensitive,
             )
 
     @wrap_exceptions
